@@ -9,7 +9,7 @@ const {
   notFoundHandler,
 } = require("../middleware/error-handler");
 
-router.post("/jobs", (req, res, next) => {
+router.post("/", (req, res, next) => {
   const {
     title,
     company,
@@ -43,7 +43,7 @@ router.post("/jobs", (req, res, next) => {
 });
 
 
-router.get("/jobs", (req, res, next) => {
+router.get("/", (req, res, next) => {
   Job.find()
     .populate("employer")
     .then((allJobs) => {
@@ -54,7 +54,7 @@ router.get("/jobs", (req, res, next) => {
     });
 });
 
-router.get("/jobs/:jobId", (req, res, next) => {
+router.get("/:jobId", (req, res, next) => {
   const { jobId } = req.params;
   Job.findById(jobId)
     .populate("employer")
@@ -66,7 +66,7 @@ router.get("/jobs/:jobId", (req, res, next) => {
 
 
 // get all jobs posted by a single employer
-router.get("/jobs/users/:userId", (req, res, next) => {
+router.get("/users/:userId", (req, res, next) => {
   const { userId } = req.params;
   Job.find({ employer: userId })
     .populate("employer")
@@ -78,7 +78,7 @@ router.get("/jobs/users/:userId", (req, res, next) => {
     });
 });
 
-router.put("/jobs/:jobId", (req, res, next) => {
+router.put("/:jobId", (req, res, next) => {
   const { jobId } = req.params;
   Job.findByIdAndUpdate(jobId, req.body, { new: true })
     .then((job) => {
@@ -89,7 +89,7 @@ router.put("/jobs/:jobId", (req, res, next) => {
     });
 });
 
-router.delete("/jobs/:jobId", (req, res, next) => {
+router.delete("/:jobId", (req, res, next) => {
   const { jobId } = req.params;
   Job.findByIdAndDelete(jobId)
     .then(() => {

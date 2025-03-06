@@ -9,8 +9,13 @@ const {
   notFoundHandler,
 } = require("../middleware/error-handler");
 
+router.get("/test", (req,res,next)=>{
+  res.json("helloooooo")
+})
+
+
 router.post(
-  "/applications",
+  "/",
   uploadResume.single("resume"),
   async (req, res, next) => {
     console.log("POST /applications hit");
@@ -45,16 +50,17 @@ router.post(
   }
 );
 
-router.get("/applications", async (req, res, next) => {
-  try {
-    const applications = await Application.find().populate("user job");
-    res.status(200).json(applications);
-  } catch (error) {
-    next(error);
-  }
+router.get("/", (req, res, next) => {
+  Application.find()
+    .then((allApplications) => {
+      res.status(200).json(allApplications);
+    })
+    .catch((e) => {
+      next(e);
+    });
 });
 
-router.get("/applications/:applicationId", (req, res, next) => {
+router.get("/:applicationId", (req, res, next) => {
   const { applicationId } = req.params;
   Application.findById(applicationId)
     .populate("user job")
@@ -63,7 +69,7 @@ router.get("/applications/:applicationId", (req, res, next) => {
     })
     .catch((e) => next(e));
 });
-router.get("/applications/users/:userId", (req, res, next) => {
+router.get("/users/:userId", (req, res, next) => {
   const { userId } = req.params;
   Application.find({ employer: userId })
     .populate("user job")
