@@ -3,7 +3,7 @@ const router = express.Router();
 const mongoose = require("mongoose");
 
 const Application = require("../models/Application.model");
-const {uploadResume} = require("../middleware/upload");
+const { uploadResume } = require("../middleware/upload");
 const {
   errorHandler,
   notFoundHandler,
@@ -13,9 +13,9 @@ router.post(
   "/applications",
   uploadResume.single("resume"),
   async (req, res, next) => {
+    console.log("POST /applications hit");
     try {
-      const { job, user, coverLetter } = req.body;
-
+      const { job, user, coverLetter, status } = req.body;
       if (!job || !user || !req.file) {
         return res
           .status(400)
@@ -35,6 +35,7 @@ router.post(
         user,
         resume,
         coverLetter,
+        status
       });
 
       res.status(201).json(application);
@@ -44,25 +45,34 @@ router.post(
   }
 );
 
-router.get("/applications", (req, res, next) => {
-  Job.find()
-    .populate("user", "job")
-    .then((allApplications) => {
-      res.status(200).json(allApplications);
-    })
-    .catch((e) => {
-      next(e);
-    });
+router.get("/applications", async (req, res, next) => {
+  try {
+    const applications = await Application.find().populate("user job");
+    res.status(200).json(applications);
+  } catch (error) {
+    next(error);
+  }
 });
 
 router.get("/applications/:applicationId", (req, res, next) => {
   const { applicationId } = req.params;
-  Job.findById(applicationId)
-    .populate("user", "job")
+  Application.findById(applicationId)
+    .populate("user job")
     .then((application) => {
       res.status(200).json(application);
     })
     .catch((e) => next(e));
+});
+router.get("/applications/users/:userId", (req, res, next) => {
+  const { userId } = req.params;
+  Application.find({ employer: userId })
+    .populate("user job")
+    .then((applications) => {
+      res.status(200).json(applications);
+    })
+    .catch((e) => {
+      next(e);
+    });
 });
 
 router.use(notFoundHandler);

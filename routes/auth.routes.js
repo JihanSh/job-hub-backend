@@ -84,6 +84,7 @@ module.exports = router;
 // POST  /auth/login - Verifies email and password and returns a JWT
 router.post("/login", (req, res, next) => {
   const { email, password } = req.body;
+  console.log("Login request body:", req.body);
 
   // Check if email or password are provided as empty string
   if (email === "" || password === "") {
@@ -117,7 +118,7 @@ router.post("/login", (req, res, next) => {
         });
 
         // Send the token as the response
-        res.status(200).json({ authToken: authToken });
+        res.status(200).json({ payload,authToken: authToken });
       } else {
         res.status(401).json({ message: "Unable to authenticate the user" });
       }

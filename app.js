@@ -22,8 +22,29 @@ const authRoutes = require("./routes/auth.routes");
 app.use("/auth", authRoutes);
 
 app.use("/api", require("./routes/job.routes"));
-app.use("/api", require("./routes/application.routes"));
+const applicationRoute = require("./routes/application.routes");
+app.use("/api", applicationRoute);
 
+
+app._router.stack.forEach((middleware) => {
+  if (middleware.route) {
+    console.log(
+      `📌 Registered route: ${Object.keys(middleware.route.methods)
+        .join(", ")
+        .toUpperCase()} ${middleware.route.path}`
+    );
+  } else if (middleware.name === "router") {
+    middleware.handle.stack.forEach((nestedRoute) => {
+      if (nestedRoute.route) {
+        console.log(
+          `📌 Registered route: ${Object.keys(nestedRoute.route.methods)
+            .join(", ")
+            .toUpperCase()} ${nestedRoute.route.path}`
+        );
+      }
+    });
+  }
+});
 
 
 // ❗ To handle errors. Routes that don't exist or errors that you handle in specific routes
