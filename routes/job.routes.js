@@ -43,16 +43,26 @@ router.post("/", isAuthenticated, async (req, res, next) => {
 });
 
 
-router.get("/", (req, res, next) => {
-  Job.find()
-    .populate("employer")
-    .then((allJobs) => {
-      res.status(200).json(allJobs);
-    })
-    .catch((e) => {
-      next(e);
-    });
+router.get("/", async (req, res, next) => {
+  try {
+    const { title, location } = req.query;
+    let filter = {};
+
+    if (title) {
+      filter.title = new RegExp(title, "i"); 
+    }
+
+    if (location) {
+      filter.location = new RegExp(location, "i"); 
+    }
+
+    const jobs = await Job.find(filter).populate("employer");
+    res.status(200).json(jobs);
+  } catch (error) {
+    next(error);
+  }
 });
+
 
 router.get("/:jobId", (req, res, next) => {
   const { jobId } = req.params;
