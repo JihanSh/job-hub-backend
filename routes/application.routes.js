@@ -9,46 +9,49 @@ const {
   notFoundHandler,
 } = require("../middleware/error-handler");
 
-router.get("/test", (req,res,next)=>{
-  res.json("helloooooo")
-})
-
+router.get("/test", (req, res, next) => {
+  res.json("helloooooo");
+});
 
 router.post(
-  "/",
+  "/:jobId",
   uploadResume.single("resume"),
   async (req, res, next) => {
-    console.log("POST /applications hit");
     try {
-      const { job, user, coverLetter, status } = req.body;
-      if (!job || !user || !req.file) {
-        return res
-          .status(400)
-          .json({ message: "Job, user, and resume are required fields." });
-      }
+      const { jobId } = req.params;
+      const { user, coverLetter } = req.body; 
 
-      if (!mongoose.Types.ObjectId.isValid(job)) {
+      if (!mongoose.Types.ObjectId.isValid(jobId)) {
         return res.status(400).json({ message: "Invalid job ID." });
       }
       if (!mongoose.Types.ObjectId.isValid(user)) {
         return res.status(400).json({ message: "Invalid user ID." });
       }
-
-      const resume = req.file.path;
-      const application = await Application.create({
-        job,
+      if (!req.file) {
+        return res.status(400).json({ message: "Resume is required." });
+      }
+      const resumeUrl = req.file.path; 
+      const application = new Application({
+        job: jobId,
         user,
-        resume,
         coverLetter,
-        status
+        resume: resumeUrl,
+        status: "pending",
       });
 
-      res.status(201).json(application);
+      await application.save();
+
+      res
+        .status(201)
+        .json({ message: "Application submitted successfully!", application });
     } catch (error) {
       next(error);
     }
   }
 );
+
+module.exports = router;
+
 
 router.get("/", (req, res, next) => {
   Application.find()
@@ -69,6 +72,8 @@ router.get("/:applicationId", (req, res, next) => {
     })
     .catch((e) => next(e));
 });
+
+
 router.get("/users/:userId", (req, res, next) => {
   const { userId } = req.params;
   Application.find({ employer: userId })
