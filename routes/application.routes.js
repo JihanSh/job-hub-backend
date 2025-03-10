@@ -17,6 +17,7 @@ router.post(
   "/:jobId",
   uploadResume.single("resume"),
   async (req, res, next) => {
+    console.log(req.file);
     try {
       const { jobId } = req.params;
       const { user, coverLetter } = req.body; 
@@ -50,7 +51,6 @@ router.post(
   }
 );
 
-module.exports = router;
 
 
 router.get("/", (req, res, next) => {
