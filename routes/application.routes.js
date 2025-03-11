@@ -76,7 +76,7 @@ router.get("/:applicationId", (req, res, next) => {
 
 router.get("/users/:userId", (req, res, next) => {
   const { userId } = req.params;
-  Application.find({ employer: userId })
+  Application.find({ user: userId })
     .populate("user job")
     .then((applications) => {
       res.status(200).json(applications);

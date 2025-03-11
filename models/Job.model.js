@@ -14,7 +14,10 @@ const JobSchema = new Schema({
     ref: "User",
     required: true,
   },
+  applications: [{ type: mongoose.Schema.Types.ObjectId, ref: "Application" }], 
   createdAt: { type: Date, default: Date.now },
 });
 
 module.exports = mongoose.model("Job", JobSchema);
+
+

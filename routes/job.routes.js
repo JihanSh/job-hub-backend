@@ -4,6 +4,7 @@ const mongoose = require("mongoose");
 const { isAuthenticated } = require("../middleware/jwt.middleware");
 const Job = require("../models/Job.model");
 const User = require("../models/User.model");
+const Application = require("../models/Application.model");
 const {
   errorHandler,
   notFoundHandler,
@@ -75,17 +76,25 @@ router.get("/:jobId", (req, res, next) => {
 });
 
 // get all jobs posted by a single employer
-router.get("/users/:userId", (req, res, next) => {
-  const { userId } = req.params;
-  Job.find({ employer: userId })
-    .populate("employer")
-    .then((jobs) => {
-      res.status(200).json(jobs);
-    })
-    .catch((e) => {
-      next(e);
-    });
+router.get("/users/:userId", async (req, res, next) => {
+  try {
+    const { userId } = req.params;
+    const jobs = await Job.find({ employer: userId }).populate("employer");
+    const jobsWithApplications = await Promise.all(
+      jobs.map(async (job) => {
+        const applications = await Application.find({ job: job._id }).populate(
+          "user"
+        );
+        return { ...job.toObject(), applications }; 
+      })
+    );
+
+    res.status(200).json(jobsWithApplications);
+  } catch (error) {
+    next(error);
+  }
 });
+
 
 router.put("/:jobId", (req, res, next) => {
   const { jobId } = req.params;
