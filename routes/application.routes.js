@@ -86,6 +86,39 @@ router.get("/users/:userId", (req, res, next) => {
     });
 });
 
+router.put(
+  "/:applicationId",
+  uploadResume.single("resume"), 
+  async (req, res, next) => {
+    try {
+      const { applicationId } = req.params;
+      const { coverLetter, status } = req.body;
+      let resumeUrl = req.file ? req.file.path : undefined;
+
+      if (!mongoose.Types.ObjectId.isValid(applicationId)) {
+        return res.status(400).json({ message: "Invalid application ID." });
+      }
+
+      const application = await Application.findById(applicationId);
+      if (!application) {
+        return res.status(404).json({ message: "Application not found." });
+      }
+      if (coverLetter) application.coverLetter = coverLetter;
+      if (status) application.status = status;
+      if (resumeUrl) application.resume = resumeUrl;
+
+      await application.save();
+
+      res.status(200).json({
+        message: "Application updated successfully!",
+        application,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
 router.use(notFoundHandler);
 router.use(errorHandler);
 module.exports = router;

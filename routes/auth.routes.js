@@ -104,21 +104,18 @@ router.post("/login", (req, res, next) => {
       // Compare the provided password with the one saved in the database
       const passwordCorrect = bcrypt.compareSync(password, foundUser.password);
 
+      // Create a JSON Web Token and sign it
       if (passwordCorrect) {
-        // Deconstruct the user object to omit the password
         const { _id, email, name, profileImage } = foundUser;
-
-        // Create an object that will be set as the token payload
         const payload = { _id, email, name, profileImage };
 
-        // Create a JSON Web Token and sign it
         const authToken = jwt.sign(payload, process.env.TOKEN_SECRET, {
           algorithm: "HS256",
           expiresIn: "6h",
         });
 
-        // Send the token as the response
-        res.status(200).json({ payload,authToken: authToken });
+        console.log("JWT Token: ", authToken); // Log the JWT for debugging
+        res.status(200).json({ payload, authToken: authToken });
       } else {
         res.status(401).json({ message: "Unable to authenticate the user" });
       }
